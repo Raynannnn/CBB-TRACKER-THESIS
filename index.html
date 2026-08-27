@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>
+CBB Thesis Tracker
+</title>
+
+
+<link rel="stylesheet" href="style.css">
+
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+        SIDEBAR
+========================= -->
+
+
+<div class="sidebar">
+
+
+<h2>
+📚 CBB Tracker
+</h2>
+
+
+
+<ul>
+
+
+<li class="active menu" data-section="ALL">
+
+Dashboard
+
+</li>
+
+
+
+<li class="menu" data-section="ICT">
+
+ICT
+
+</li>
+
+
+<li class="menu" data-section="HE">
+
+HE
+
+</li>
+
+
+<li class="menu" data-section="COMPRO">
+
+COMPRO
+
+</li>
+
+
+<li class="menu" data-section="ANI">
+
+ANI
+
+</li>
+
+
+<li class="menu" data-section="ET">
+
+ET
+
+</li>
+
+
+<li class="menu" data-section="IA">
+
+IA
+
+</li>
+
+
+<li class="menu" data-section="CP">
+
+CP
+
+</li>
+
+
+<li class="menu" data-section="EST">
+
+EST
+
+</li>
+
+
+
+<li class="menu" data-section="HISTORY">
+
+Borrow History
+
+</li>
+
+
+
+</ul>
+
+
+</div>
+
+
+
+
+
+
+<!-- =========================
+        MAIN CONTENT
+========================= -->
+
+
+<div class="main">
+
+
+
+<header>
+
+
+<div>
+
+
+<h1>
+CBB Thesis Repository
+</h1>
+
+
+<p>
+Centralized Thesis Monitoring System
+</p>
+
+
+</div>
+
+
+
+<div class="admin">
+
+ADMIN
+
+</div>
+
+
+
+</header>
+
+
+
+
+
+
+
+<!-- =========================
+        DASHBOARD CARDS
+========================= -->
+
+
+<div class="cards">
+
+
+<div class="card">
+
+
+<h2 id="totalCount">
+
+0
+
+</h2>
+
+
+<p>
+Total Thesis
+</p>
+
+
+</div>
+
+
+
+
+<div class="card available-card">
+
+
+<h2 id="availableCount">
+
+0
+
+</h2>
+
+
+<p>
+Available
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="card borrowed-card">
+
+
+<h2 id="borrowedCount">
+
+0
+
+</h2>
+
+
+<p>
+Borrowed
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="card program-card">
+
+
+<h2>
+
+8
+
+</h2>
+
+
+<p>
+Programs
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+        REPOSITORY
+========================= -->
+
+
+<div id="repositoryPage">
+
+
+
+<div class="top-bar">
+
+
+<h2 id="sectionTitle">
+
+All Thesis
+
+</h2>
+
+
+
+<button id="addBtn">
+
++ Add Thesis
+
+</button>
+
+
+</div>
+
+
+
+
+
+<input
+
+type="text"
+
+id="searchBox"
+
+placeholder="Search Thesis ID, Title, Author..."
+
+>
+
+
+
+
+
+
+
+
+
+<table>
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+THESIS ID
+</th>
+
+
+<th>
+THESIS TITLE
+</th>
+
+
+<th>
+AUTHORS / RESEARCHERS
+</th>
+
+
+<th>
+DATE
+</th>
+
+
+<th>
+ADVISER
+</th>
+
+
+<th>
+STATUS
+</th>
+
+
+<th>
+ACTION
+</th>
+
+
+
+</tr>
+
+
+</thead>
+
+
+
+
+<tbody id="thesisTable">
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+        HISTORY PAGE
+========================= -->
+
+
+<div id="historyPage">
+
+
+<h2>
+
+Borrow History
+
+</h2>
+
+
+
+<table>
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+THESIS ID
+</th>
+
+
+<th>
+BORROWER
+</th>
+
+
+<th>
+DATE BORROWED
+</th>
+
+
+<th>
+DATE RETURNED
+</th>
+
+
+<th>
+STATUS
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody id="historyTable">
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+        ADD THESIS MODAL
+========================= -->
+
+
+<div class="modal" id="addModal">
+
+
+
+<div class="modal-box">
+
+
+
+<h2>
+Add Thesis
+</h2>
+
+
+
+<input
+
+id="titleInput"
+
+placeholder="Thesis Title"
+
+>
+
+
+
+
+<textarea
+
+id="authorInput"
+
+placeholder="Authors / Researchers"
+
+></textarea>
+
+
+
+
+
+<input
+
+id="dateInput"
+
+placeholder="Date"
+
+>
+
+
+
+
+<input
+
+id="adviserInput"
+
+placeholder="Adviser"
+
+>
+
+
+
+
+
+<select id="programInput">
+
+
+<option value="ICT">
+
+ICT
+
+</option>
+
+
+<option value="HE">
+
+HE
+
+</option>
+
+
+<option value="COMPRO">
+
+COMPRO
+
+</option>
+
+
+<option value="ANI">
+
+ANI
+
+</option>
+
+
+<option value="ET">
+
+ET
+
+</option>
+
+
+<option value="IA">
+
+IA
+
+</option>
+
+
+<option value="CP">
+
+CP
+
+</option>
+
+
+<option value="EST">
+
+EST
+
+</option>
+
+
+</select>
+
+
+
+
+
+
+<button id="saveThesis">
+
+SAVE
+
+</button>
+
+
+
+<button id="closeAdd">
+
+CANCEL
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+        BORROW MODAL
+========================= -->
+
+
+<div class="modal" id="borrowModal">
+
+
+
+<div class="modal-box">
+
+
+
+<h2>
+Borrow Thesis
+</h2>
+
+
+
+
+<input
+
+id="borrowerInput"
+
+placeholder="Borrower's Name"
+
+>
+
+
+
+
+<input
+
+id="studentInput"
+
+placeholder="Student Number"
+
+>
+
+
+
+
+<input
+
+id="courseInput"
+
+placeholder="Course"
+
+>
+
+
+
+
+<button id="confirmBorrow">
+
+CONFIRM
+
+</button>
+
+
+
+
+<button id="closeBorrow">
+
+CANCEL
+
+</button>
+
+
+
+</div>
+
+
+
+</div>
+
+
+<script src="app.js"></script>
+
+
+</body>
+
+
+</html>
