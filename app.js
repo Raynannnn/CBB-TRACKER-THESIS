@@ -293,6 +293,11 @@ document.getElementById("saveThesis").onclick = function () {
 // ===============================
 
 
+document.getElementById("programsToggle").onclick = function () {
+  this.classList.toggle("open");
+  document.getElementById("programsSubmenu").classList.toggle("open");
+};
+
 let menu = document.querySelectorAll(".menu");
 
 menu.forEach(function (item) {
@@ -445,11 +450,28 @@ function displayLoginLog() {
   table.innerHTML = "";
 
   if (loginLogs.length === 0) {
-    table.innerHTML = `<tr><td colspan="4">No login activity yet</td></tr>`;
+    table.innerHTML = `<tr><td colspan="5">No login activity yet</td></tr>`;
     return;
   }
 
+  // Dedupe: isang row lang per account (latest login nila) + total
+  // login count, para makita agad ni Owner/Admin lahat ng existing
+  // accounts (at current role nila) imbes na paulit-ulit na log.
+  // loginLogs ay naka-sort na desc by timestamp, kaya yung unang
+  // ma-eencounter natin per email ang pinakabago — 'wag na palitan.
+  let uniqueByEmail = {};
+
   loginLogs.forEach(function (item) {
+    let key = (item.email || "").toLowerCase();
+    if (!uniqueByEmail[key]) {
+      uniqueByEmail[key] = Object.assign({ loginCount: 0 }, item);
+    }
+    uniqueByEmail[key].loginCount++;
+  });
+
+  let uniqueList = Object.values(uniqueByEmail);
+
+  uniqueList.forEach(function (item) {
 
     let when = item.timestamp ? new Date(item.timestamp).toLocaleString() : "-";
 
@@ -471,6 +493,7 @@ function displayLoginLog() {
         <td>${roleLabel}</td>
         <td>${when}</td>
         <td>${device}</td>
+        <td>${item.loginCount}x</td>
       </tr>
     `;
   });

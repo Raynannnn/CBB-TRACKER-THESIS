@@ -101,6 +101,55 @@ h1,h2,.brand-title{
     display:none;
 }
 
+.sidebar .menu-parent{
+    padding:13px 16px;
+    margin-bottom:6px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14.5px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-left:3px solid transparent;
+    transition:background .2s ease;
+}
+
+.sidebar .menu-parent:hover{
+    background:rgba(255,255,255,.06);
+}
+
+.sidebar .menu-parent.open{
+    background:rgba(201,162,39,.10);
+    color:var(--gold-soft);
+}
+
+.submenu-arrow{
+    transition:transform .2s ease;
+    font-size:11px;
+    display:inline-block;
+}
+
+.menu-parent.open .submenu-arrow{
+    transform:rotate(180deg);
+}
+
+.submenu{
+    list-style:none;
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .25s ease;
+}
+
+.submenu.open{
+    max-height:400px;
+}
+
+.sidebar .sub-item{
+    padding-left:32px !important;
+    font-size:13.5px !important;
+    opacity:.92;
+}
+
 /* ===============================
         MAIN
 ================================ */

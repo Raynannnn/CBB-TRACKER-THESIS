@@ -63,60 +63,34 @@ Dashboard
 
 
 
-<li class="menu" data-section="ICT">
+<li class="menu-parent" id="programsToggle">
 
-ICT
+<span>COURSE/SECTION</span>
 
-</li>
-
-
-<li class="menu" data-section="HE">
-
-HE
+<span class="submenu-arrow">▾</span>
 
 </li>
 
 
-<li class="menu" data-section="COMPRO">
+<ul class="submenu" id="programsSubmenu">
 
-COMPRO
+<li class="menu sub-item" data-section="ICT">ICT</li>
 
-</li>
+<li class="menu sub-item" data-section="HE">HE</li>
 
+<li class="menu sub-item" data-section="COMPRO">COMPRO</li>
 
-<li class="menu" data-section="ANI">
+<li class="menu sub-item" data-section="ANI">ANI</li>
 
-ANI
+<li class="menu sub-item" data-section="ET">ET</li>
 
-</li>
+<li class="menu sub-item" data-section="IA">IA</li>
 
+<li class="menu sub-item" data-section="CP">CP</li>
 
-<li class="menu" data-section="ET">
+<li class="menu sub-item" data-section="EST">EST</li>
 
-ET
-
-</li>
-
-
-<li class="menu" data-section="IA">
-
-IA
-
-</li>
-
-
-<li class="menu" data-section="CP">
-
-CP
-
-</li>
-
-
-<li class="menu" data-section="EST">
-
-EST
-
-</li>
+</ul>
 
 
 
@@ -518,7 +492,14 @@ STATUS
 
 <span class="owner-note">
 
-Visible only to Owner and Admin accounts. Shows every login — Owner, Admin, and User (borrower) accounts.
+Visible only to Owner and Admin accounts. Shows every account that has logged in — Owner, Admin, and User (borrower).
+
+</span>
+
+
+<span class="owner-note">
+
+Para i-promote ang isang account (User → Admin/Owner): idagdag ang email nila sa ADMIN_EMAILS o OWNER_EMAILS sa roles.js, i-save, i-upload ulit. Kailangan nila mag-logout at mag-login ulit para ma-apply.
 
 </span>
 
@@ -550,6 +531,11 @@ DATE &amp; TIME
 
 <th>
 DEVICE / BROWSER
+</th>
+
+
+<th>
+LOGINS
 </th>
 
 
