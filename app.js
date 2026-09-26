@@ -8,24 +8,39 @@
 // DATABASE (Firestore, real-time)
 // ===============================
 
-let thesisData = [];      // synced live from Firestore "thesis" collection
-let borrowHistory = [];   // synced live from Firestore "history" collection
-let loginLogs = [];       // synced live from Firestore "loginLogs" collection (Owner only)
-let isLoggedIn = false;
+let thesisData = [];       // synced live from Firestore "thesis" collection
+let borrowHistory = [];    // synced live from Firestore "history" collection
+let loginLogs = [];        // synced live from Firestore "loginLogs" collection
+let registeredUsers = [];  // synced live from Firestore "users" collection (borrower accounts)
+
+let isLoggedIn = false;    // true kapag may naka-login, Admin/Owner man o regular User
 let isOwner = false;
+let isAdmin = false;
+let isManager = false;     // Owner OR Admin — sila lang may management rights
+let idTouched = false;     // true kapag na-edit na manually ang Thesis ID sa Add modal
 
 // ===============================
-// OWNER CONFIG
+// OWNER / ADMIN CONFIG
 // ===============================
-// Ilagay dito ang email(s) ng Owner (yung account na dapat makakita
-// ng Login Activity page). Puwedeng dagdagan ng iba pang owner email.
+// OWNER_EMAILS  — pinaka-taas na access, kasama ang pagkita ng Login Activity
+//                 at Registered Users.
+// ADMIN_EMAILS  — parehong management rights ng Owner (add/edit/delete/borrow/
+//                 return + Login Activity + Registered Users), pero regular
+//                 admin lang (hal. si Doc).
+// Sinumang HINDI nasa dalawang listahang ito, at naka-login, ay itinuturing na
+// regular na User (borrower) — view-only sila sa thesis table.
 const OWNER_EMAILS = [
   "owner@cbbtracker.com"   // TODO: palitan ng aktwal na email ng Owner
+];
+
+const ADMIN_EMAILS = [
+  "doc@cbbtracker.com"     // TODO: palitan ng aktwal na email ng admin/adviser
 ];
 
 const thesisRef = db.collection("thesis");
 const historyRef = db.collection("history");
 const loginLogsRef = db.collection("loginLogs");
+const usersRef = db.collection("users");
 
 // Live sync: bawat may pagbabago sa database (kahit ibang device),
 // automatic na mag-uupdate ang page na ito.
@@ -50,32 +65,77 @@ loginLogsRef.orderBy("timestamp", "desc").onSnapshot(function (snapshot) {
   });
   displayLoginLog();
 }, function (err) {
-  // Kapag walang access (hindi Owner) base sa Firestore rules, tahimik lang mag-fail.
+  // Kapag walang access (hindi Owner/Admin) base sa Firestore rules, tahimik lang mag-fail.
   console.log("Login activity not visible:", err.message);
+});
+
+usersRef.orderBy("registeredAt", "desc").onSnapshot(function (snapshot) {
+  registeredUsers = snapshot.docs.map(function (doc) {
+    return Object.assign({ docId: doc.id }, doc.data());
+  });
+  displayUsers();
+}, function (err) {
+  console.log("Registered users not visible:", err.message);
 });
 
 
 // ===============================
-// AUTH (isang admin account lang: si Doc)
+// ROLE HELPERS
+// ===============================
+
+function computeRole(email) {
+  email = (email || "").toLowerCase();
+  if (OWNER_EMAILS.indexOf(email) !== -1) return "owner";
+  if (ADMIN_EMAILS.indexOf(email) !== -1) return "admin";
+  return "user";
+}
+
+function recordLogin(email, role) {
+  loginLogsRef.add({
+    email: (email || "").toLowerCase(),
+    role: role,
+    timestamp: new Date().toISOString(),
+    device: navigator.userAgent
+  }).catch(function (err) {
+    console.log("Could not record login activity:", err.message);
+  });
+}
+
+
+// ===============================
+// AUTH GATE (kailangan mag-login o
+// mag-sign up bago makapasok sa site)
 // ===============================
 
 auth.onAuthStateChanged(function (user) {
   isLoggedIn = !!user;
-  isOwner = isLoggedIn && OWNER_EMAILS.indexOf((user.email || "").toLowerCase()) !== -1;
 
+  let email = isLoggedIn ? (user.email || "").toLowerCase() : "";
+  isOwner = isLoggedIn && OWNER_EMAILS.indexOf(email) !== -1;
+  isAdmin = isLoggedIn && ADMIN_EMAILS.indexOf(email) !== -1;
+  isManager = isOwner || isAdmin;
+
+  let authGate = document.getElementById("authGate");
+  let appShell = document.getElementById("appShell");
   let authBtn = document.getElementById("authBtn");
   let addBtn = document.getElementById("addBtn");
   let roleBadge = document.getElementById("roleBadge");
-  let ownerMenuItem = document.getElementById("ownerMenuItem");
+  let managerMenuItems = document.querySelectorAll(".manager-only");
 
   if (isLoggedIn) {
+    authGate.style.display = "none";
+    appShell.style.display = "flex";
+
     authBtn.innerHTML = "LOGOUT";
     authBtn.classList.add("logged-in");
-    addBtn.style.display = "inline-block";
+    addBtn.style.display = isManager ? "inline-block" : "none";
 
     roleBadge.classList.add("show");
-    roleBadge.innerHTML = isOwner ? "👑 OWNER" : "ADMIN";
+    roleBadge.innerHTML = isOwner ? "👑 OWNER" : (isAdmin ? "🛠️ ADMIN" : "🎓 USER");
   } else {
+    authGate.style.display = "flex";
+    appShell.style.display = "none";
+
     authBtn.innerHTML = "LOGIN";
     authBtn.classList.remove("logged-in");
     addBtn.style.display = "none";
@@ -84,31 +144,45 @@ auth.onAuthStateChanged(function (user) {
     roleBadge.innerHTML = "";
   }
 
-  ownerMenuItem.style.display = isOwner ? "block" : "none";
+  managerMenuItems.forEach(function (el) {
+    el.style.display = isManager ? "block" : "none";
+  });
 
-  if (!isOwner) {
+  if (!isManager) {
     document.getElementById("loginLogPage").style.display = "none";
+    document.getElementById("usersPage").style.display = "none";
   }
 
-  displayThesis();   // i-refresh yung Action column base sa login state
+  displayThesis();   // i-refresh yung Action column base sa role
   displayLoginLog();
+  displayUsers();
 });
 
 document.getElementById("authBtn").onclick = function () {
-  if (isLoggedIn) {
-    auth.signOut();
-  } else {
-    document.getElementById("loginModal").style.display = "flex";
-  }
+  if (isLoggedIn) auth.signOut();
 };
 
-document.getElementById("closeLogin").onclick = function () {
-  document.getElementById("loginModal").style.display = "none";
+// ---- Gate tabs (Login / Create Account) ----
+
+document.getElementById("tabLogin").onclick = function () {
+  this.classList.add("active");
+  document.getElementById("tabSignup").classList.remove("active");
+  document.getElementById("gateLoginForm").style.display = "block";
+  document.getElementById("gateSignupForm").style.display = "none";
 };
 
-document.getElementById("submitLogin").onclick = function () {
-  let email = document.getElementById("loginEmail").value;
-  let password = document.getElementById("loginPassword").value;
+document.getElementById("tabSignup").onclick = function () {
+  this.classList.add("active");
+  document.getElementById("tabLogin").classList.remove("active");
+  document.getElementById("gateSignupForm").style.display = "block";
+  document.getElementById("gateLoginForm").style.display = "none";
+};
+
+// ---- Gate: Login ----
+
+document.getElementById("gateLoginBtn").onclick = function () {
+  let email = document.getElementById("gateEmail").value.trim();
+  let password = document.getElementById("gatePassword").value;
 
   if (email === "" || password === "") {
     alert("Enter email and password");
@@ -117,21 +191,53 @@ document.getElementById("submitLogin").onclick = function () {
 
   auth.signInWithEmailAndPassword(email, password)
     .then(function () {
-      document.getElementById("loginModal").style.display = "none";
-      document.getElementById("loginEmail").value = "";
-      document.getElementById("loginPassword").value = "";
-
-      // I-log ang login event para makita ng Owner (Login Activity page).
-      loginLogsRef.add({
-        email: email.toLowerCase(),
-        timestamp: new Date().toISOString(),
-        device: navigator.userAgent
-      }).catch(function (err) {
-        console.log("Could not record login activity:", err.message);
-      });
+      document.getElementById("gateEmail").value = "";
+      document.getElementById("gatePassword").value = "";
+      recordLogin(email, computeRole(email));
     })
     .catch(function (err) {
       alert("Login failed: " + err.message);
+    });
+};
+
+// ---- Gate: Sign Up (para sa mga User/borrower) ----
+
+document.getElementById("gateSignupBtn").onclick = function () {
+  let name = document.getElementById("suName").value.trim();
+  let studentNo = document.getElementById("suStudentNo").value.trim();
+  let course = document.getElementById("suCourse").value.trim();
+  let email = document.getElementById("suEmail").value.trim();
+  let password = document.getElementById("suPassword").value;
+
+  if (name === "" || email === "" || password === "") {
+    alert("Please complete the required fields (Name, Email, Password).");
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(function () {
+      return usersRef.add({
+        name: name,
+        studentNumber: studentNo,
+        course: course,
+        email: email.toLowerCase(),
+        role: "user",
+        registeredAt: new Date().toISOString()
+      });
+    })
+    .then(function () {
+      recordLogin(email, "user");
+      ["suName", "suStudentNo", "suCourse", "suEmail", "suPassword"].forEach(function (id) {
+        document.getElementById(id).value = "";
+      });
+    })
+    .catch(function (err) {
+      alert("Sign up failed: " + err.message);
     });
 };
 
@@ -179,7 +285,7 @@ function displayThesis() {
 
     let action;
 
-    if (!isLoggedIn) {
+    if (!isManager) {
       action = `<span class="view-only-note">View only</span>`;
     } else {
       action = item.status === "Available"
@@ -225,12 +331,28 @@ function updateDashboard() {
 
 
 // ===============================
-// ADD THESIS
+// ADD THESIS (may editable Thesis ID)
 // ===============================
 
 
+function suggestThesisId() {
+  let program = document.getElementById("programInput").value;
+  let countInProgram = thesisData.filter(function (x) { return x.program === program; }).length;
+  document.getElementById("idInput").value = "CBB26-" + program + String(countInProgram + 1).padStart(2, "0");
+}
+
 document.getElementById("addBtn").onclick = function () {
   document.getElementById("addModal").style.display = "flex";
+  idTouched = false;
+  suggestThesisId();
+};
+
+document.getElementById("programInput").onchange = function () {
+  if (!idTouched) suggestThesisId();
+};
+
+document.getElementById("idInput").oninput = function () {
+  idTouched = true;
 };
 
 document.getElementById("closeAdd").onclick = function () {
@@ -239,22 +361,25 @@ document.getElementById("closeAdd").onclick = function () {
 
 document.getElementById("saveThesis").onclick = function () {
 
-  if (!isLoggedIn) { alert("Login first as admin."); return; }
+  if (!isManager) { alert("Admin access only."); return; }
 
+  let id = document.getElementById("idInput").value.trim();
   let title = document.getElementById("titleInput").value;
   let authors = document.getElementById("authorInput").value;
   let date = document.getElementById("dateInput").value;
   let adviser = document.getElementById("adviserInput").value;
   let program = document.getElementById("programInput").value;
 
-  if (title === "" || authors === "" || adviser === "") {
-    alert("Please complete information");
+  if (id === "" || title === "" || authors === "" || adviser === "") {
+    alert("Please complete information (including Thesis ID)");
     return;
   }
 
-  let countInProgram = thesisData.filter(function (x) { return x.program === program; }).length;
-
-  let id = "CBB26-" + program + String(countInProgram + 1).padStart(2, "0");
+  let duplicate = thesisData.some(function (x) { return x.id === id; });
+  if (duplicate) {
+    alert("Thesis ID already exists. Please use a different one.");
+    return;
+  }
 
   thesisRef.add({
     id: id,
@@ -266,6 +391,7 @@ document.getElementById("saveThesis").onclick = function () {
     status: "Available"
   }).then(function () {
     document.getElementById("addModal").style.display = "none";
+    document.getElementById("idInput").value = "";
     document.getElementById("titleInput").value = "";
     document.getElementById("authorInput").value = "";
     document.getElementById("dateInput").value = "";
@@ -293,9 +419,16 @@ menu.forEach(function (item) {
     currentSection = this.dataset.section;
 
     if (currentSection === "LOGINLOG") {
-      if (!isOwner) return; // safety net; item is hidden from non-Owners anyway
+      if (!isManager) return; // safety net; item is hidden from Users anyway
       document.getElementById("loginLogPage").style.display = "block";
       document.getElementById("loginLogPage").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    if (currentSection === "USERS") {
+      if (!isManager) return; // safety net; item is hidden from Users anyway
+      document.getElementById("usersPage").style.display = "block";
+      document.getElementById("usersPage").scrollIntoView({ behavior: "smooth" });
       return;
     }
 
@@ -329,7 +462,7 @@ document.getElementById("searchBox").onkeyup = function () {
 let selectedDocId = null;
 
 function borrowThesis(docId) {
-  if (!isLoggedIn) { alert("Login first as admin."); return; }
+  if (!isManager) { alert("Admin access only."); return; }
   selectedDocId = docId;
   document.getElementById("borrowModal").style.display = "flex";
 }
@@ -371,7 +504,7 @@ document.getElementById("confirmBorrow").onclick = function () {
 
 function returnThesis(docId) {
 
-  if (!isLoggedIn) { alert("Login first as admin."); return; }
+  if (!isManager) { alert("Admin access only."); return; }
 
   let thesis = thesisData.find(function (x) { return x.docId === docId; });
 
@@ -415,21 +548,19 @@ function displayHistory() {
 
 
 // ===============================
-// LOGIN ACTIVITY (OWNER ONLY)
+// LOGIN ACTIVITY (Owner/Admin only)
 // ===============================
 
 
 function displayLoginLog() {
 
-  if (!isOwner) return;
-
   let table = document.getElementById("loginLogTable");
-  if (!table) return;
+  if (!table || !isManager) return;
 
   table.innerHTML = "";
 
   if (loginLogs.length === 0) {
-    table.innerHTML = `<tr><td colspan="3">No login activity yet</td></tr>`;
+    table.innerHTML = `<tr><td colspan="4">No login activity yet</td></tr>`;
     return;
   }
 
@@ -447,9 +578,12 @@ function displayLoginLog() {
       else device = "Desktop browser";
     }
 
+    let roleLabel = item.role === "owner" ? "Owner" : (item.role === "admin" ? "Admin" : "User");
+
     table.innerHTML += `
       <tr>
         <td>${item.email}</td>
+        <td>${roleLabel}</td>
         <td>${when}</td>
         <td>${device}</td>
       </tr>
@@ -459,22 +593,66 @@ function displayLoginLog() {
 
 
 // ===============================
-// EDIT THESIS
+// REGISTERED USERS (Owner/Admin only)
+// ===============================
+
+
+function displayUsers() {
+
+  let table = document.getElementById("usersTable");
+  if (!table || !isManager) return;
+
+  table.innerHTML = "";
+
+  if (registeredUsers.length === 0) {
+    table.innerHTML = `<tr><td colspan="5">No registered users yet</td></tr>`;
+    return;
+  }
+
+  registeredUsers.forEach(function (item) {
+    let registered = item.registeredAt ? new Date(item.registeredAt).toLocaleDateString() : "-";
+
+    table.innerHTML += `
+      <tr>
+        <td>${item.name || "-"}</td>
+        <td>${item.studentNumber || "-"}</td>
+        <td>${item.course || "-"}</td>
+        <td>${item.email}</td>
+        <td>${registered}</td>
+      </tr>
+    `;
+  });
+}
+
+
+// ===============================
+// EDIT THESIS (kasama na ang Thesis ID)
 // ===============================
 
 
 function editThesis(docId) {
 
-  if (!isLoggedIn) { alert("Login first as admin."); return; }
+  if (!isManager) { alert("Admin access only."); return; }
 
   let thesis = thesisData.find(function (x) { return x.docId === docId; });
 
+  let newId = prompt("Edit Thesis ID", thesis.id);
   let newTitle = prompt("Edit Thesis Title", thesis.title);
   let newAuthor = prompt("Edit Authors", thesis.authors);
   let newDate = prompt("Edit Date", thesis.date);
   let newAdviser = prompt("Edit Adviser", thesis.adviser);
 
   let updates = {};
+
+  if (newId && newId.trim() !== "" && newId.trim() !== thesis.id) {
+    let duplicate = thesisData.some(function (x) { return x.id === newId.trim() && x.docId !== docId; });
+    if (duplicate) {
+      alert("Thesis ID already exists — ID was not changed, other fields will still update.");
+    } else {
+      updates.id = newId.trim();
+    }
+  }
+
   if (newTitle) updates.title = newTitle;
   if (newAuthor) updates.authors = newAuthor;
   if (newDate) updates.date = newDate;
@@ -495,7 +673,7 @@ function editThesis(docId) {
 
 function deleteThesis(docId) {
 
-  if (!isLoggedIn) { alert("Login first as admin."); return; }
+  if (!isManager) { alert("Admin access only."); return; }
 
   let confirmDelete = confirm("Are you sure you want to delete this thesis?");
 

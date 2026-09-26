@@ -26,6 +26,101 @@ CBB Thesis Tracker
 
 
 <!-- =========================
+        AUTH GATE
+========================= -->
+
+
+<div id="authGate">
+
+
+<div class="gate-card">
+
+
+<h2 class="gate-title">
+📚 CBB Thesis Tracker
+</h2>
+
+
+<p class="gate-sub">
+Centralized Thesis Monitoring System — TUP Manila, College of Industrial Education
+</p>
+
+
+<div class="gate-tabs">
+
+<span class="gate-tab active" id="tabLogin">Login</span>
+
+<span class="gate-tab" id="tabSignup">Create Account</span>
+
+</div>
+
+
+
+<div id="gateLoginForm">
+
+
+<input id="gateEmail" type="email" placeholder="Email">
+
+
+<input id="gatePassword" type="password" placeholder="Password">
+
+
+<button id="gateLoginBtn">LOGIN</button>
+
+
+<p class="gate-hint">
+
+Mag-boborrow ka lang? Gumawa muna ng account sa "Create Account" tab.
+
+</p>
+
+
+</div>
+
+
+
+<div id="gateSignupForm" style="display:none;">
+
+
+<input id="suName" placeholder="Full Name">
+
+
+<input id="suStudentNo" placeholder="Student Number">
+
+
+<input id="suCourse" placeholder="Course / Section">
+
+
+<input id="suEmail" type="email" placeholder="Email">
+
+
+<input id="suPassword" type="password" placeholder="Password (min. 6 characters)">
+
+
+<button id="gateSignupBtn">CREATE ACCOUNT</button>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<!-- =========================
+        APP SHELL (dashboard — nakatago
+        hangga't hindi naka-login)
+========================= -->
+
+
+<div id="appShell" style="display:none;">
+
+
+<!-- =========================
         SIDEBAR
 ========================= -->
 
@@ -116,9 +211,16 @@ Borrow History
 </li>
 
 
-<li class="menu" data-section="LOGINLOG" id="ownerMenuItem">
+<li class="menu manager-only" data-section="LOGINLOG" id="ownerMenuItem">
 
 🔑 Login Activity
+
+</li>
+
+
+<li class="menu manager-only" data-section="USERS" id="usersMenuItem">
+
+👥 Registered Users
 
 </li>
 
@@ -500,7 +602,7 @@ STATUS
 
 <span class="owner-note">
 
-Visible only to the Owner account. Shows every time an admin has logged in.
+Visible only to Owner and Admin accounts. Shows every login — Owner, Admin, and User (borrower) accounts.
 
 </span>
 
@@ -517,6 +619,11 @@ Visible only to the Owner account. Shows every time an admin has logged in.
 
 <th>
 EMAIL
+</th>
+
+
+<th>
+ROLE
 </th>
 
 
@@ -553,6 +660,86 @@ DEVICE / BROWSER
 
 
 
+<!-- =========================
+        REGISTERED USERS (OWNER/ADMIN ONLY)
+========================= -->
+
+
+<div id="usersPage" style="display:none;">
+
+
+<h2>
+
+👥 Registered Users
+
+</h2>
+
+
+<span class="owner-note">
+
+Mga account na self-registered sa "Create Account" tab — mga borrower/estudyante.
+
+</span>
+
+
+
+<table>
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+NAME
+</th>
+
+
+<th>
+STUDENT NO.
+</th>
+
+
+<th>
+COURSE
+</th>
+
+
+<th>
+EMAIL
+</th>
+
+
+<th>
+REGISTERED ON
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody id="usersTable">
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+</div>
+
+
+
+
 
 
 
@@ -574,6 +761,17 @@ DEVICE / BROWSER
 <h2>
 Add Thesis
 </h2>
+
+
+
+<input
+
+id="idInput"
+
+placeholder="Thesis ID (auto-generated — edit if you like)"
+
+>
+
 
 
 
@@ -796,28 +994,12 @@ CANCEL
 
 
 <!-- =========================
-        LOGIN MODAL (Doc/Adviser only)
+        LOGIN MODAL removed — replaced by the Auth Gate above
 ========================= -->
 
-<div class="modal" id="loginModal">
-
-<div class="modal-box">
-
-<h2>Admin Login</h2>
-
-<input id="loginEmail" placeholder="Email" type="email">
-
-<input id="loginPassword" placeholder="Password" type="password">
-
-<button id="submitLogin">LOGIN</button>
-
-<button id="closeLogin">CANCEL</button>
-
-</div>
-
-</div>
-
 </div><!-- /.main -->
+
+</div><!-- /#appShell -->
 
 <!-- Firebase (FREE tier) -->
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>

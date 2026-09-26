@@ -23,22 +23,37 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // =====================================
-// OWNER SETUP (bago ang feature na ito)
+// OWNER / ADMIN / USER SETUP
 // =====================================
-// 1. Sa Authentication > Users, gumawa ng SEPARATE account para sa Owner
-//    (hiwalay sa admin account ni Doc), tapos ilagay yung email nito sa
-//    OWNER_EMAILS array sa app.js.
-// 2. Kahit sinong naka-login (Owner man o admin) ay may parehong access
-//    sa Add/Edit/Delete/Borrow/Return — ang pinagkaiba lang ng Owner ay
-//    nakikita niya yung "Login Activity" page.
-// 3. Para hindi makita ng regular na admin ang loginLogs (privacy),
-//    idagdag ito sa Firestore Rules (Firestore > Rules):
+// May 3 klase ng account ngayon:
+//   • Owner — pinaka-taas, makikita LAHAT (Login Activity + Registered Users)
+//   • Admin — parehong management rights ng Owner (add/edit/delete/borrow/
+//             return + Login Activity + Registered Users), pero hindi kailangang
+//             siya lang mag-isa (hal. si Doc)
+//   • User  — regular borrower, self-register sa "Create Account" tab sa
+//             gate screen. View-only sila sa thesis table.
+//
+// 1. Sa app.js, ilagay ang email ng Owner sa OWNER_EMAILS, at email ng
+//    admin/adviser (hal. si Doc) sa ADMIN_EMAILS.
+// 2. Gumawa ng Firebase Auth account (Authentication > Users > Add user)
+//    para sa Owner at sa Admin gamit ang eksaktong email na inilagay mo sa
+//    OWNER_EMAILS / ADMIN_EMAILS. Hindi mo na kailangang gumawa ng account
+//    para sa mga User — sila mismo gagawa nito sa "Create Account" tab.
+// 3. Sa Firestore > Rules, idagdag ito para protektado ang loginLogs at
+//    users collections (Owner/Admin lang makakabasa ng buong listahan;
+//    kahit sino naka-login ay makaka-create ng sarili niyang record):
 //
 //    match /loginLogs/{doc} {
 //      allow read: if request.auth != null &&
-//                     request.auth.token.email in ["owner@cbbtracker.com"];
+//                     request.auth.token.email in ["owner@cbbtracker.com","doc@cbbtracker.com"];
 //      allow create: if request.auth != null;
 //    }
 //
-//    Palitan yung email sa loob ng listahan ng parehong email na nasa
-//    OWNER_EMAILS sa app.js.
+//    match /users/{doc} {
+//      allow read: if request.auth != null &&
+//                     request.auth.token.email in ["owner@cbbtracker.com","doc@cbbtracker.com"];
+//      allow create: if request.auth != null;
+//    }
+//
+//    Palitan yung mga email sa loob ng listahan para tugma sa OWNER_EMAILS
+//    at ADMIN_EMAILS na nasa app.js.
