@@ -583,6 +583,39 @@ tbody tr:hover{
     background:var(--navy-deep);
 }
 
+.email-suffix-wrap{
+    display:flex;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:13px;
+    overflow:hidden;
+    background:#fff;
+}
+
+.email-suffix-wrap:focus-within{
+    border-color:var(--gold);
+}
+
+.email-suffix-wrap input{
+    flex:1;
+    border:none !important;
+    margin-bottom:0 !important;
+    border-radius:0 !important;
+}
+
+.email-suffix-wrap input:focus{
+    border-color:transparent !important;
+}
+
+.email-suffix-wrap .email-suffix{
+    padding:12px 14px 12px 4px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    white-space:nowrap;
+}
+
 .gate-hint{
     margin-top:14px;
     font-size:11.5px;

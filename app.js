@@ -20,22 +20,10 @@ let isManager = false;     // Owner OR Admin — sila lang may management rights
 let idTouched = false;     // true kapag na-edit na manually ang Thesis ID sa Add modal
 
 // ===============================
-// OWNER / ADMIN CONFIG
+// COLLECTIONS
 // ===============================
-// OWNER_EMAILS  — pinaka-taas na access, kasama ang pagkita ng Login Activity
-//                 at Registered Users.
-// ADMIN_EMAILS  — parehong management rights ng Owner (add/edit/delete/borrow/
-//                 return + Login Activity + Registered Users), pero regular
-//                 admin lang (hal. si Doc).
-// Sinumang HINDI nasa dalawang listahang ito, at naka-login, ay itinuturing na
-// regular na User (borrower) — view-only sila sa thesis table.
-const OWNER_EMAILS = [
-  "owner@cbbtracker.com"   // TODO: palitan ng aktwal na email ng Owner
-];
-
-const ADMIN_EMAILS = [
-  "doc@cbbtracker.com"     // TODO: palitan ng aktwal na email ng admin/adviser
-];
+// (OWNER_EMAILS / ADMIN_EMAILS / computeRole() ay nasa roles.js na —
+//  ginagamit din 'yun ng login.js)
 
 const thesisRef = db.collection("thesis");
 const historyRef = db.collection("history");
@@ -80,69 +68,38 @@ usersRef.orderBy("registeredAt", "desc").onSnapshot(function (snapshot) {
 
 
 // ===============================
-// ROLE HELPERS
-// ===============================
-
-function computeRole(email) {
-  email = (email || "").toLowerCase();
-  if (OWNER_EMAILS.indexOf(email) !== -1) return "owner";
-  if (ADMIN_EMAILS.indexOf(email) !== -1) return "admin";
-  return "user";
-}
-
-function recordLogin(email, role) {
-  loginLogsRef.add({
-    email: (email || "").toLowerCase(),
-    role: role,
-    timestamp: new Date().toISOString(),
-    device: navigator.userAgent
-  }).catch(function (err) {
-    console.log("Could not record login activity:", err.message);
-  });
-}
-
-
-// ===============================
-// AUTH GATE (kailangan mag-login o
-// mag-sign up bago makapasok sa site)
+// AUTH GATE (kailangan mag-login sa
+// login.html bago makapasok dito)
 // ===============================
 
 auth.onAuthStateChanged(function (user) {
   isLoggedIn = !!user;
 
-  let email = isLoggedIn ? (user.email || "").toLowerCase() : "";
-  isOwner = isLoggedIn && OWNER_EMAILS.indexOf(email) !== -1;
-  isAdmin = isLoggedIn && ADMIN_EMAILS.indexOf(email) !== -1;
+  if (!isLoggedIn) {
+    // Walang session — ibalik sa login.html.
+    window.location.href = "login.html";
+    return;
+  }
+
+  let email = (user.email || "").toLowerCase();
+  isOwner = OWNER_EMAILS.indexOf(email) !== -1;
+  isAdmin = ADMIN_EMAILS.indexOf(email) !== -1;
   isManager = isOwner || isAdmin;
 
-  let authGate = document.getElementById("authGate");
   let appShell = document.getElementById("appShell");
   let authBtn = document.getElementById("authBtn");
   let addBtn = document.getElementById("addBtn");
   let roleBadge = document.getElementById("roleBadge");
   let managerMenuItems = document.querySelectorAll(".manager-only");
 
-  if (isLoggedIn) {
-    authGate.style.display = "none";
-    appShell.style.display = "flex";
+  appShell.style.display = "flex";
 
-    authBtn.innerHTML = "LOGOUT";
-    authBtn.classList.add("logged-in");
-    addBtn.style.display = isManager ? "inline-block" : "none";
+  authBtn.innerHTML = "LOGOUT";
+  authBtn.classList.add("logged-in");
+  addBtn.style.display = isManager ? "inline-block" : "none";
 
-    roleBadge.classList.add("show");
-    roleBadge.innerHTML = isOwner ? "👑 OWNER" : (isAdmin ? "🛠️ ADMIN" : "🎓 USER");
-  } else {
-    authGate.style.display = "flex";
-    appShell.style.display = "none";
-
-    authBtn.innerHTML = "LOGIN";
-    authBtn.classList.remove("logged-in");
-    addBtn.style.display = "none";
-
-    roleBadge.classList.remove("show");
-    roleBadge.innerHTML = "";
-  }
+  roleBadge.classList.add("show");
+  roleBadge.innerHTML = isOwner ? "👑 OWNER" : (isAdmin ? "🛠️ ADMIN" : "🎓 USER");
 
   managerMenuItems.forEach(function (el) {
     el.style.display = isManager ? "block" : "none";
@@ -160,85 +117,8 @@ auth.onAuthStateChanged(function (user) {
 
 document.getElementById("authBtn").onclick = function () {
   if (isLoggedIn) auth.signOut();
-};
-
-// ---- Gate tabs (Login / Create Account) ----
-
-document.getElementById("tabLogin").onclick = function () {
-  this.classList.add("active");
-  document.getElementById("tabSignup").classList.remove("active");
-  document.getElementById("gateLoginForm").style.display = "block";
-  document.getElementById("gateSignupForm").style.display = "none";
-};
-
-document.getElementById("tabSignup").onclick = function () {
-  this.classList.add("active");
-  document.getElementById("tabLogin").classList.remove("active");
-  document.getElementById("gateSignupForm").style.display = "block";
-  document.getElementById("gateLoginForm").style.display = "none";
-};
-
-// ---- Gate: Login ----
-
-document.getElementById("gateLoginBtn").onclick = function () {
-  let email = document.getElementById("gateEmail").value.trim();
-  let password = document.getElementById("gatePassword").value;
-
-  if (email === "" || password === "") {
-    alert("Enter email and password");
-    return;
-  }
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then(function () {
-      document.getElementById("gateEmail").value = "";
-      document.getElementById("gatePassword").value = "";
-      recordLogin(email, computeRole(email));
-    })
-    .catch(function (err) {
-      alert("Login failed: " + err.message);
-    });
-};
-
-// ---- Gate: Sign Up (para sa mga User/borrower) ----
-
-document.getElementById("gateSignupBtn").onclick = function () {
-  let name = document.getElementById("suName").value.trim();
-  let studentNo = document.getElementById("suStudentNo").value.trim();
-  let course = document.getElementById("suCourse").value.trim();
-  let email = document.getElementById("suEmail").value.trim();
-  let password = document.getElementById("suPassword").value;
-
-  if (name === "" || email === "" || password === "") {
-    alert("Please complete the required fields (Name, Email, Password).");
-    return;
-  }
-
-  if (password.length < 6) {
-    alert("Password must be at least 6 characters.");
-    return;
-  }
-
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(function () {
-      return usersRef.add({
-        name: name,
-        studentNumber: studentNo,
-        course: course,
-        email: email.toLowerCase(),
-        role: "user",
-        registeredAt: new Date().toISOString()
-      });
-    })
-    .then(function () {
-      recordLogin(email, "user");
-      ["suName", "suStudentNo", "suCourse", "suEmail", "suPassword"].forEach(function (id) {
-        document.getElementById(id).value = "";
-      });
-    })
-    .catch(function (err) {
-      alert("Sign up failed: " + err.message);
-    });
+  // pagkatapos mag-signOut, ang onAuthStateChanged sa itaas na ang
+  // bahalang mag-redirect papunta sa login.html
 };
 
 
@@ -283,15 +163,20 @@ function displayThesis() {
 
     let statusClass = item.status === "Available" ? "available" : "borrowed";
 
-    let action;
+    let action = "";
 
-    if (!isManager) {
-      action = `<span class="view-only-note">View only</span>`;
+    // Borrow: pwede ng regular User, hindi lang Manager (sila naman talaga
+    // ang gagamit at mag-boborrow ng thesis).
+    if (item.status === "Available") {
+      action += `<button class="action borrow-btn" onclick="borrowThesis('${item.docId}')">Borrow</button>`;
     } else {
-      action = item.status === "Available"
-        ? `<button class="action borrow-btn" onclick="borrowThesis('${item.docId}')">Borrow</button>`
-        : `<button class="action return-btn" onclick="returnThesis('${item.docId}')">Return</button>`;
+      // Return: kahit sino, User man o Manager — sila rin naman ang
+      // nag-borrow kaya sila rin dapat makapag-return.
+      action += `<button class="action return-btn" onclick="returnThesis('${item.docId}')">Return</button>`;
+    }
 
+    // Edit/Delete: Manager lang, User's gilid.
+    if (isManager) {
       action += `
         <button class="action edit-btn" onclick="editThesis('${item.docId}')">Edit</button>
         <button class="action delete-btn" onclick="deleteThesis('${item.docId}')">Delete</button>
@@ -462,7 +347,7 @@ document.getElementById("searchBox").onkeyup = function () {
 let selectedDocId = null;
 
 function borrowThesis(docId) {
-  if (!isManager) { alert("Admin access only."); return; }
+  if (!isLoggedIn) { alert("Please log in first."); return; }
   selectedDocId = docId;
   document.getElementById("borrowModal").style.display = "flex";
 }
@@ -504,7 +389,7 @@ document.getElementById("confirmBorrow").onclick = function () {
 
 function returnThesis(docId) {
 
-  if (!isManager) { alert("Admin access only."); return; }
+  if (!isLoggedIn) { alert("Please log in first."); return; }
 
   let thesis = thesisData.find(function (x) { return x.docId === docId; });
 

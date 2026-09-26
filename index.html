@@ -26,94 +26,10 @@ CBB Thesis Tracker
 
 
 <!-- =========================
-        AUTH GATE
-========================= -->
-
-
-<div id="authGate">
-
-
-<div class="gate-card">
-
-
-<h2 class="gate-title">
-📚 CBB Thesis Tracker
-</h2>
-
-
-<p class="gate-sub">
-Centralized Thesis Monitoring System — TUP Manila, College of Industrial Education
-</p>
-
-
-<div class="gate-tabs">
-
-<span class="gate-tab active" id="tabLogin">Login</span>
-
-<span class="gate-tab" id="tabSignup">Create Account</span>
-
-</div>
-
-
-
-<div id="gateLoginForm">
-
-
-<input id="gateEmail" type="email" placeholder="Email">
-
-
-<input id="gatePassword" type="password" placeholder="Password">
-
-
-<button id="gateLoginBtn">LOGIN</button>
-
-
-<p class="gate-hint">
-
-Mag-boborrow ka lang? Gumawa muna ng account sa "Create Account" tab.
-
-</p>
-
-
-</div>
-
-
-
-<div id="gateSignupForm" style="display:none;">
-
-
-<input id="suName" placeholder="Full Name">
-
-
-<input id="suStudentNo" placeholder="Student Number">
-
-
-<input id="suCourse" placeholder="Course / Section">
-
-
-<input id="suEmail" type="email" placeholder="Email">
-
-
-<input id="suPassword" type="password" placeholder="Password (min. 6 characters)">
-
-
-<button id="gateSignupBtn">CREATE ACCOUNT</button>
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
-
-<!-- =========================
         APP SHELL (dashboard — nakatago
-        hangga't hindi naka-login)
+        hangga't hindi naka-login; kung hindi
+        naka-login, ire-redirect ng app.js
+        papunta sa login.html)
 ========================= -->
 
 
@@ -1007,6 +923,7 @@ CANCEL
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 
 <script src="firebase-config.js"></script>
+<script src="roles.js"></script>
 <script src="app.js"></script>
 
 

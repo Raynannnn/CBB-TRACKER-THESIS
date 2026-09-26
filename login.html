@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>
+CBB Thesis Tracker — Login
+</title>
+
+
+<link rel="stylesheet" href="style.css">
+
+
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+        AUTH GATE (sariling page na)
+========================= -->
+
+
+<div id="authGate">
+
+
+<div class="gate-card">
+
+
+<h2 class="gate-title">
+📚 CBB Thesis Tracker
+</h2>
+
+
+<p class="gate-sub">
+Centralized Thesis Monitoring System — TUP Manila, College of Industrial Education
+</p>
+
+
+<div class="gate-tabs">
+
+<span class="gate-tab active" id="tabLogin">Login</span>
+
+<span class="gate-tab" id="tabSignup">Create Account</span>
+
+</div>
+
+
+
+<div id="gateLoginForm">
+
+
+<input id="gateEmail" type="email" placeholder="Email">
+
+
+<input id="gatePassword" type="password" placeholder="Password">
+
+
+<button id="gateLoginBtn">LOGIN</button>
+
+
+<p class="gate-hint">
+
+Mag-boborrow ka lang? Gumawa muna ng account sa "Create Account" tab.
+
+</p>
+
+
+</div>
+
+
+
+<div id="gateSignupForm" style="display:none;">
+
+
+<input id="suName" placeholder="Full Name">
+
+
+<input id="suStudentNo" placeholder="Student Number">
+
+
+<input id="suCourse" placeholder="Course / Section">
+
+
+<div class="email-suffix-wrap">
+
+<input id="suEmailUser" placeholder="Username" autocomplete="off">
+
+<span class="email-suffix">@cbbtracker.com</span>
+
+</div>
+
+
+<input id="suPassword" type="password" placeholder="Password (min. 6 characters)">
+
+
+<button id="gateSignupBtn">CREATE ACCOUNT</button>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<!-- Firebase (FREE tier) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+
+<script src="firebase-config.js"></script>
+<script src="roles.js"></script>
+<script src="login.js"></script>
+
+
+</body>
+
+
+</html>
