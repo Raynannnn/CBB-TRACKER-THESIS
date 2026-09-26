@@ -8,30 +8,30 @@
 // DATABASE (Firestore, real-time)
 // ===============================
 
-let thesisData = [];       // synced live from Firestore "thesis" collection
-let borrowHistory = [];    // synced live from Firestore "history" collection
-let loginLogs = [];        // synced live from Firestore "loginLogs" collection
-let registeredUsers = [];  // synced live from Firestore "users" collection (borrower accounts)
+let thesisData = [];       // synced live from the Firestore "thesis" collection
+let borrowHistory = [];    // synced live from the Firestore "history" collection
+let loginLogs = [];        // synced live from the Firestore "loginLogs" collection
+let registeredUsers = [];  // synced live from the Firestore "users" collection (borrower accounts)
 
-let isLoggedIn = false;    // true kapag may naka-login, Admin/Owner man o regular User
+let isLoggedIn = false;    // true when someone is logged in, Admin/Owner or regular User
 let isOwner = false;
 let isAdmin = false;
-let isManager = false;     // Owner OR Admin — sila lang may management rights
-let idTouched = false;     // true kapag na-edit na manually ang Thesis ID sa Add modal
+let isManager = false;     // Owner OR Admin — only they have management rights
+let idTouched = false;     // true once the Thesis ID has been manually edited in the Add modal
 
 // ===============================
 // COLLECTIONS
 // ===============================
-// (OWNER_EMAILS / ADMIN_EMAILS / computeRole() ay nasa roles.js na —
-//  ginagamit din 'yun ng login.js)
+// (OWNER_EMAILS / ADMIN_EMAILS / computeRole() live in roles.js —
+//  login.js uses them too)
 
 const thesisRef = db.collection("thesis");
 const historyRef = db.collection("history");
 const loginLogsRef = db.collection("loginLogs");
 const usersRef = db.collection("users");
 
-// Live sync: bawat may pagbabago sa database (kahit ibang device),
-// automatic na mag-uupdate ang page na ito.
+// Live sync: any change in the database (even from another device)
+// automatically updates this page.
 thesisRef.orderBy("id").onSnapshot(function (snapshot) {
   thesisData = snapshot.docs.map(function (doc) {
     return Object.assign({ docId: doc.id }, doc.data());
@@ -53,7 +53,7 @@ loginLogsRef.orderBy("timestamp", "desc").onSnapshot(function (snapshot) {
   });
   displayLoginLog();
 }, function (err) {
-  // Kapag walang access (hindi Owner/Admin) base sa Firestore rules, tahimik lang mag-fail.
+  // No access (not Owner/Admin) per the Firestore rules — fail silently.
   console.log("Login activity not visible:", err.message);
 });
 
@@ -68,15 +68,15 @@ usersRef.orderBy("registeredAt", "desc").onSnapshot(function (snapshot) {
 
 
 // ===============================
-// AUTH GATE (kailangan mag-login sa
-// login.html bago makapasok dito)
+// AUTH GATE (must log in on
+// login.html before entering here)
 // ===============================
 
 auth.onAuthStateChanged(function (user) {
   isLoggedIn = !!user;
 
   if (!isLoggedIn) {
-    // Walang session — ibalik sa login.html.
+    // No session — send back to login.html.
     window.location.href = "login.html";
     return;
   }
@@ -110,15 +110,15 @@ auth.onAuthStateChanged(function (user) {
     document.getElementById("usersPage").style.display = "none";
   }
 
-  displayThesis();   // i-refresh yung Action column base sa role
+  displayThesis();   // refresh the Action column based on role
   displayLoginLog();
   displayUsers();
 });
 
 document.getElementById("authBtn").onclick = function () {
   if (isLoggedIn) auth.signOut();
-  // pagkatapos mag-signOut, ang onAuthStateChanged sa itaas na ang
-  // bahalang mag-redirect papunta sa login.html
+  // after signOut, the onAuthStateChanged above takes care of
+  // redirecting to login.html
 };
 
 
@@ -153,7 +153,7 @@ function displayThesis() {
   if (filtered.length === 0) {
     table.innerHTML = `
       <tr>
-        <td colspan="7">No Thesis Found</td>
+        <td colspan="7">No thesis found — try a different search, or add one above.</td>
       </tr>
     `;
     return;
@@ -165,17 +165,17 @@ function displayThesis() {
 
     let action = "";
 
-    // Borrow: pwede ng regular User, hindi lang Manager (sila naman talaga
-    // ang gagamit at mag-boborrow ng thesis).
+    // Borrow: available to a regular User too, not just a Manager
+    // (borrowers are exactly who needs this button).
     if (item.status === "Available") {
       action += `<button class="action borrow-btn" onclick="borrowThesis('${item.docId}')">Borrow</button>`;
     } else {
-      // Return: kahit sino, User man o Manager — sila rin naman ang
-      // nag-borrow kaya sila rin dapat makapag-return.
+      // Return: anyone, User or Manager — whoever borrowed it should
+      // also be able to return it.
       action += `<button class="action return-btn" onclick="returnThesis('${item.docId}')">Return</button>`;
     }
 
-    // Edit/Delete: Manager lang, User's gilid.
+    // Edit/Delete: Manager only.
     if (isManager) {
       action += `
         <button class="action edit-btn" onclick="editThesis('${item.docId}')">Edit</button>
@@ -216,7 +216,7 @@ function updateDashboard() {
 
 
 // ===============================
-// ADD THESIS (may editable Thesis ID)
+// ADD THESIS (with an editable Thesis ID)
 // ===============================
 
 
@@ -363,7 +363,9 @@ document.getElementById("closeBorrow").onclick = function () {
 
 document.getElementById("confirmBorrow").onclick = function () {
 
-  let name = document.getElementById("borrowerInput").value;
+  let name = document.getElementById("borrowerInput").value.trim();
+  let studentNo = document.getElementById("studentInput").value.trim();
+  let course = document.getElementById("courseInput").value.trim();
 
   if (name === "") {
     alert("Enter borrower name");
@@ -377,12 +379,16 @@ document.getElementById("confirmBorrow").onclick = function () {
   historyRef.add({
     id: thesis.id,
     borrower: name,
+    studentNumber: studentNo,
+    course: course,
     borrowDate: new Date().toLocaleDateString(),
     returnDate: "-",
     status: "Borrowed"
   }).then(function () {
     document.getElementById("borrowModal").style.display = "none";
     document.getElementById("borrowerInput").value = "";
+    document.getElementById("studentInput").value = "";
+    document.getElementById("courseInput").value = "";
   });
 };
 
@@ -423,11 +429,18 @@ function displayHistory() {
   let table = document.getElementById("historyTable");
   table.innerHTML = "";
 
+  if (borrowHistory.length === 0) {
+    table.innerHTML = `<tr><td colspan="7">No borrow history yet</td></tr>`;
+    return;
+  }
+
   borrowHistory.forEach(function (item) {
     table.innerHTML += `
       <tr>
         <td>${item.id}</td>
         <td>${item.borrower}</td>
+        <td>${item.studentNumber || "-"}</td>
+        <td>${item.course || "-"}</td>
         <td>${item.borrowDate}</td>
         <td>${item.returnDate}</td>
         <td><span class="status ${item.status === "Returned" ? "available" : "borrowed"}">${item.status}</span></td>
@@ -454,11 +467,11 @@ function displayLoginLog() {
     return;
   }
 
-  // Dedupe: isang row lang per account (latest login nila) + total
-  // login count, para makita agad ni Owner/Admin lahat ng existing
-  // accounts (at current role nila) imbes na paulit-ulit na log.
-  // loginLogs ay naka-sort na desc by timestamp, kaya yung unang
-  // ma-eencounter natin per email ang pinakabago — 'wag na palitan.
+  // Dedupe: one row per account (their latest login) plus a total
+  // login count, so Owner/Admin can see every existing account
+  // (and its current role) at a glance instead of a repetitive log.
+  // loginLogs is already sorted desc by timestamp, so the first
+  // one we encounter per email is the most recent — don't overwrite it.
   let uniqueByEmail = {};
 
   loginLogs.forEach(function (item) {
@@ -534,7 +547,7 @@ function displayUsers() {
 
 
 // ===============================
-// EDIT THESIS (kasama na ang Thesis ID)
+// EDIT THESIS (including the Thesis ID)
 // ===============================
 
 

@@ -1,17 +1,17 @@
 // =====================================
 // CBB THESIS TRACKER
-// LOGIN.JS — hawak ang Login / Create Account
-// tabs sa login.html. Pagkatapos mag-login o
-// mag-signup, dinadala ang user sa index.html
-// (dashboard), kung saan hawak na ng app.js
-// ang buong app.
+// LOGIN.JS — runs the Login / Create Account
+// tabs on login.html. Once a user logs in or
+// signs up, they are sent to index.html
+// (dashboard), which app.js takes over from
+// there.
 // =====================================
 
 const loginLogsRef = db.collection("loginLogs");
 const usersRef = db.collection("users");
 
-// Kapag may existing session pa rin (naka-login na),
-// diretso na sa dashboard — wag nang ipakita ang login form.
+// If there is already an active session (already logged in),
+// go straight to the dashboard — don't show the login form.
 auth.onAuthStateChanged(function (user) {
   if (user) {
     window.location.href = "index.html";
@@ -87,7 +87,7 @@ document.getElementById("gateLoginBtn").onclick = function () {
 };
 
 
-// ---- Sign Up (para sa mga User/borrower) ----
+// ---- Sign Up (for Users/borrowers) ----
 
 document.getElementById("gateSignupBtn").onclick = function () {
   let name = document.getElementById("suName").value.trim();

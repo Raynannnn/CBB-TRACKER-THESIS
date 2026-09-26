@@ -26,10 +26,9 @@ CBB Thesis Tracker
 
 
 <!-- =========================
-        APP SHELL (dashboard — nakatago
-        hangga't hindi naka-login; kung hindi
-        naka-login, ire-redirect ng app.js
-        papunta sa login.html)
+        APP SHELL (dashboard — hidden until
+        the user is logged in; app.js redirects
+        to login.html if there is no session)
 ========================= -->
 
 
@@ -65,7 +64,7 @@ Dashboard
 
 <li class="menu-parent" id="programsToggle">
 
-<span>COURSE/SECTION</span>
+<span>Course / Section</span>
 
 <span class="submenu-arrow">▾</span>
 
@@ -117,6 +116,11 @@ Borrow History
 
 
 </ul>
+
+
+<p class="sidebar-footer">
+TUP Manila · College of Industrial Education
+</p>
 
 
 </div>
@@ -438,6 +442,16 @@ BORROWER
 
 
 <th>
+STUDENT NO.
+</th>
+
+
+<th>
+COURSE
+</th>
+
+
+<th>
 DATE BORROWED
 </th>
 
@@ -476,7 +490,7 @@ STATUS
 
 
 <!-- =========================
-        LOGIN ACTIVITY (OWNER ONLY)
+        LOGIN ACTIVITY (OWNER/ADMIN ONLY)
 ========================= -->
 
 
@@ -499,7 +513,7 @@ Visible only to Owner and Admin accounts. Shows every account that has logged in
 
 <span class="owner-note">
 
-Para i-promote ang isang account (User → Admin/Owner): idagdag ang email nila sa ADMIN_EMAILS o OWNER_EMAILS sa roles.js, i-save, i-upload ulit. Kailangan nila mag-logout at mag-login ulit para ma-apply.
+To promote an account (User → Admin/Owner): add their email to ADMIN_EMAILS or OWNER_EMAILS in roles.js, save, and re-upload. The account holder must log out and log back in for the change to take effect.
 
 </span>
 
@@ -579,7 +593,7 @@ LOGINS
 
 <span class="owner-note">
 
-Mga account na self-registered sa "Create Account" tab — mga borrower/estudyante.
+Accounts self-registered through the "Create Account" tab — borrowers/students.
 
 </span>
 
@@ -895,9 +909,7 @@ CANCEL
 </div>
 
 
-<!-- =========================
-        LOGIN MODAL removed — replaced by the Auth Gate above
-========================= -->
+<!-- Login modal removed — replaced by the Auth Gate above -->
 
 </div><!-- /.main -->
 

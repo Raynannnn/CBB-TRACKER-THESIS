@@ -1,9 +1,9 @@
 /* =====================================
    CBB THESIS TRACKER — STYLE.CSS
-   Design language: academic archive /
-   library catalog. Navy + parchment +
-   gold, serif headings, mono catalog
-   codes.
+   Design language: college archive reading
+   room. Card-catalog drawers, brass label
+   plates, ruled parchment, spine-label
+   call numbers.
 ===================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
@@ -11,16 +11,21 @@
 :root{
     --navy:#0b1d33;
     --navy-deep:#081526;
-    --parchment:#f6f1e6;
-    --paper:#fffdf8;
-    --ink:#20241f;
-    --ink-soft:#5b5a52;
-    --gold:#c9a227;
-    --gold-soft:#e7cf8a;
+    --navy-panel:#122842;
+    --parchment:#f3ead9;
+    --paper:#fffcf5;
+    --ink:#241f1a;
+    --ink-soft:#6b6255;
+    --brass:#b5892c;
+    --brass-bright:#c9a227;
+    --brass-soft:#e2c583;
     --forest:#2f5d46;
     --burgundy:#7a2e2e;
-    --line:#e4dcc8;
+    --line:#ddd0b0;
+    --line-soft:#ece3cf;
     --shadow:0 12px 30px rgba(11,29,51,.10);
+    --shadow-lift:0 20px 44px rgba(11,29,51,.18);
+    --radius-card:10px;
 }
 
 *{
@@ -30,46 +35,89 @@
     font-family:'Inter',sans-serif;
 }
 
+*:focus-visible{
+    outline:2px solid var(--brass-bright);
+    outline-offset:2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+
+html{
+    scrollbar-color: var(--brass-soft) var(--parchment);
+}
+
 body{
     display:flex;
-    background:var(--parchment);
+    min-height:100vh;
     color:var(--ink);
+    background:
+        repeating-linear-gradient(
+            180deg,
+            rgba(196,178,128,.10) 0px,
+            rgba(196,178,128,.10) 1px,
+            transparent 1px,
+            transparent 34px
+        ),
+        radial-gradient(circle at 12% 0%, rgba(201,162,39,.08), transparent 45%),
+        var(--parchment);
 }
 
 h1,h2,.brand-title{
     font-family:'Lora',serif;
 }
 
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-track{ background:var(--parchment); }
+::-webkit-scrollbar-thumb{ background:var(--brass-soft); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover{ background:var(--brass); }
+
 /* ===============================
-        SIDEBAR
+        SIDEBAR — "catalog drawer"
 ================================ */
 
 .sidebar{
-    width:260px;
+    width:264px;
     height:100vh;
     position:fixed;
     background:
-        linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);
+        linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
     color:var(--parchment);
-    padding:30px 16px;
-    border-right:3px solid var(--gold);
+    padding:30px 16px 20px;
+    border-right:3px solid var(--brass-bright);
+    display:flex;
+    flex-direction:column;
 }
 
 .sidebar h2{
     text-align:center;
-    margin-bottom:6px;
-    color:var(--gold-soft);
+    margin-bottom:4px;
+    color:var(--brass-soft);
     font-size:20px;
     letter-spacing:.02em;
 }
 
 .sidebar > p.tagline{
     text-align:center;
-    font-size:11px;
+    font-size:10.5px;
     color:#8fa2b8;
-    margin-bottom:30px;
+    margin-bottom:14px;
     font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.08em;
+    text-transform:uppercase;
 }
+
+.sidebar::after{
+    content:"";
+    display:block;
+    height:1px;
+    margin:0 6px 22px;
+    background:linear-gradient(90deg, transparent, rgba(201,162,39,.55), transparent);
+    order:-1;
+}
+
+.sidebar h2, .sidebar > p.tagline{ order:-2; }
 
 .sidebar ul{
     list-style:none;
@@ -78,11 +126,12 @@ h1,h2,.brand-title{
 .sidebar li{
     padding:13px 16px;
     margin-bottom:6px;
-    border-radius:8px;
+    border-radius:6px;
     cursor:pointer;
-    transition:background .2s ease, padding-left .2s ease;
+    transition:background .18s ease, padding-left .18s ease;
     font-size:14.5px;
     border-left:3px solid transparent;
+    position:relative;
 }
 
 .sidebar li:hover{
@@ -92,9 +141,20 @@ h1,h2,.brand-title{
 
 .sidebar .active{
     background:rgba(201,162,39,.14);
-    border-left:3px solid var(--gold);
-    color:var(--gold-soft);
+    border-left:3px solid var(--brass-bright);
+    color:var(--brass-soft);
     font-weight:600;
+}
+
+.sidebar .active::before{
+    content:"";
+    position:absolute;
+    left:-3px; top:50%;
+    width:6px; height:6px;
+    background:var(--brass-bright);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 0 3px rgba(201,162,39,.20);
 }
 
 #ownerMenuItem{
@@ -104,14 +164,16 @@ h1,h2,.brand-title{
 .sidebar .menu-parent{
     padding:13px 16px;
     margin-bottom:6px;
-    border-radius:8px;
+    border-radius:6px;
     cursor:pointer;
-    font-size:14.5px;
+    font-size:13px;
+    letter-spacing:.06em;
+    color:#b9c4d3;
     display:flex;
     justify-content:space-between;
     align-items:center;
     border-left:3px solid transparent;
-    transition:background .2s ease;
+    transition:background .18s ease;
 }
 
 .sidebar .menu-parent:hover{
@@ -120,7 +182,7 @@ h1,h2,.brand-title{
 
 .sidebar .menu-parent.open{
     background:rgba(201,162,39,.10);
-    color:var(--gold-soft);
+    color:var(--brass-soft);
 }
 
 .submenu-arrow{
@@ -150,35 +212,58 @@ h1,h2,.brand-title{
     opacity:.92;
 }
 
+.sidebar-footer{
+    margin-top:auto;
+    padding:14px 10px 4px;
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.06em;
+    color:#5f7086;
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
 /* ===============================
         MAIN
 ================================ */
 
 .main{
-    margin-left:260px;
-    padding:38px 42px;
-    width:calc(100% - 260px);
+    margin-left:264px;
+    padding:38px 44px 60px;
+    width:calc(100% - 264px);
 }
 
 header{
     display:flex;
     justify-content:space-between;
-    align-items:center;
+    align-items:flex-end;
     margin-bottom:32px;
-    padding-bottom:22px;
+    padding-bottom:20px;
     border-bottom:2px solid var(--line);
+    position:relative;
+}
+
+header::after{
+    content:"";
+    position:absolute;
+    left:0; bottom:-2px;
+    width:120px;
+    height:2px;
+    background:var(--brass-bright);
 }
 
 header h1{
-    font-size:28px;
+    font-size:27px;
     color:var(--navy);
+    letter-spacing:.01em;
 }
 
 header p{
     color:var(--ink-soft);
-    font-size:13.5px;
-    margin-top:4px;
+    font-size:12.5px;
+    margin-top:5px;
     font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.04em;
 }
 
 .header-right{
@@ -194,7 +279,7 @@ header p{
     letter-spacing:.04em;
     padding:6px 12px;
     border-radius:20px;
-    background:var(--gold);
+    background:var(--brass-bright);
     color:var(--navy-deep);
     display:none;
 }
@@ -212,45 +297,67 @@ header p{
     font-size:13.5px;
     letter-spacing:.03em;
     border:1px solid var(--line);
+    transition:transform .15s ease, box-shadow .15s ease;
+}
+
+.admin:hover{
+    transform:translateY(-1px);
+    box-shadow:var(--shadow-lift);
+}
+
+.admin:active{
+    transform:translateY(0);
 }
 
 /* ===============================
-        DASHBOARD CARDS
+        DASHBOARD CARDS — reading-room plaques
 ================================ */
 
 .cards{
     display:grid;
     grid-template-columns:repeat(4,1fr);
     gap:18px;
-    margin-bottom:32px;
+    margin-bottom:34px;
 }
 
 .card{
     background:var(--paper);
-    padding:26px 28px;
-    border-radius:14px;
+    padding:24px 26px;
+    border-radius:var(--radius-card);
     box-shadow:var(--shadow);
     border:1px solid var(--line);
-    transition:transform .25s ease;
+    transition:transform .2s ease, box-shadow .2s ease;
     position:relative;
     overflow:hidden;
 }
 
+.card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0;
+    width:0; height:0;
+    border-style:solid;
+    border-width:0 0 22px 22px;
+    border-color:transparent transparent var(--line-soft) transparent;
+}
+
 .card:hover{
     transform:translateY(-4px);
+    box-shadow:var(--shadow-lift);
 }
 
 .card h2{
-    font-size:34px;
+    font-size:32px;
     color:var(--navy);
+    font-variant-numeric:tabular-nums;
 }
 
 .card p{
     color:var(--ink-soft);
-    font-size:13px;
+    font-size:11.5px;
     margin-top:4px;
-    text-transform:uppercase;
-    letter-spacing:.05em;
+    letter-spacing:.07em;
+    font-family:'IBM Plex Mono',monospace;
 }
 
 .available-card{
@@ -259,6 +366,7 @@ header p{
     border:none;
 }
 .available-card h2, .available-card p{ color:white; }
+.available-card::before{ border-color:transparent transparent rgba(255,255,255,.16) transparent; }
 
 .borrowed-card{
     background:var(--burgundy);
@@ -266,6 +374,7 @@ header p{
     border:none;
 }
 .borrowed-card h2, .borrowed-card p{ color:white; }
+.borrowed-card::before{ border-color:transparent transparent rgba(255,255,255,.16) transparent; }
 
 .program-card{
     background:var(--navy);
@@ -273,6 +382,7 @@ header p{
     border:none;
 }
 .program-card h2, .program-card p{ color:white; }
+.program-card::before{ border-color:transparent transparent rgba(255,255,255,.16) transparent; }
 
 /* ===============================
         TOP BAR
@@ -292,18 +402,23 @@ header p{
 
 .top-bar button{
     background:var(--navy);
-    color:var(--gold-soft);
+    color:var(--brass-soft);
     border:none;
     padding:12px 22px;
     border-radius:8px;
     cursor:pointer;
     font-size:14px;
     font-weight:600;
-    transition:background .2s ease;
+    transition:background .18s ease, transform .12s ease;
 }
 
 .top-bar button:hover{
     background:var(--navy-deep);
+    transform:translateY(-1px);
+}
+
+.top-bar button:active{
+    transform:translateY(0) scale(.98);
 }
 
 /* ===============================
@@ -319,14 +434,20 @@ header p{
     background:var(--paper);
     outline:none;
     font-size:13.5px;
+    transition:border-color .15s ease, box-shadow .15s ease;
 }
 
 #searchBox:focus{
-    border-color:var(--gold);
+    border-color:var(--brass-bright);
+    box-shadow:0 0 0 3px rgba(201,162,39,.14);
+}
+
+#searchBox::placeholder{
+    color:#a79c86;
 }
 
 /* ===============================
-        TABLE
+        TABLE — catalog cards
 ================================ */
 
 table{
@@ -341,16 +462,16 @@ table{
 
 thead{
     background:var(--navy);
-    color:var(--gold-soft);
+    color:var(--brass-soft);
 }
 
 th{
     padding:15px 16px;
     text-align:left;
-    font-size:12px;
-    letter-spacing:.05em;
-    text-transform:uppercase;
+    font-size:11.5px;
+    letter-spacing:.08em;
     font-weight:600;
+    font-family:'IBM Plex Mono',monospace;
 }
 
 td{
@@ -359,14 +480,38 @@ td{
     font-size:13.5px;
 }
 
+tbody tr:last-child td{
+    border-bottom:none;
+}
+
 td:first-child{
     font-family:'IBM Plex Mono',monospace;
-    font-size:12.5px;
+    font-size:12px;
     color:var(--navy);
+    font-weight:600;
+    letter-spacing:.02em;
+    white-space:nowrap;
+}
+
+td:first-child::before{
+    content:"№ ";
+    color:var(--brass);
+    font-weight:600;
+}
+
+tbody tr{
+    transition:background .12s ease;
 }
 
 tbody tr:hover{
-    background:#faf6ea;
+    background:#faf5e6;
+}
+
+td[colspan]{
+    text-align:center;
+    padding:34px 16px;
+    color:var(--ink-soft);
+    font-style:italic;
 }
 
 /* ===============================
@@ -380,6 +525,7 @@ tbody tr:hover{
     font-size:11px;
     font-weight:600;
     letter-spacing:.03em;
+    display:inline-block;
 }
 
 .available{
@@ -402,6 +548,7 @@ tbody tr:hover{
     cursor:pointer;
     font-size:12px;
     font-weight:600;
+    transition:opacity .15s ease, transform .1s ease;
 }
 
 .borrow-btn{ background:var(--burgundy); }
@@ -411,33 +558,37 @@ tbody tr:hover{
 
 .action:hover{
     opacity:.85;
-    transform:scale(1.04);
+}
+
+.action:active{
+    transform:scale(.96);
 }
 
 /* ===============================
         HISTORY / LOGIN LOG
 ================================ */
 
-#historyPage, #loginLogPage{
-    margin-top:38px;
+#historyPage, #loginLogPage, #usersPage{
+    margin-top:40px;
 }
 
-#historyPage h2, #loginLogPage h2{
-    margin-bottom:18px;
+#historyPage h2, #loginLogPage h2, #usersPage h2{
+    margin-bottom:16px;
     color:var(--navy);
     font-size:19px;
 }
 
-#loginLogPage .owner-note{
+#loginLogPage .owner-note, #usersPage .owner-note{
     font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
+    font-size:11.5px;
     color:var(--ink-soft);
-    margin-bottom:14px;
+    margin-bottom:12px;
     display:block;
+    line-height:1.5;
 }
 
 /* ===============================
-        MODAL
+        MODAL — index card
 ================================ */
 
 .modal{
@@ -450,15 +601,18 @@ tbody tr:hover{
     background:rgba(11,29,51,.55);
     justify-content:center;
     align-items:center;
+    z-index:20;
 }
 
 .modal-box{
     background:var(--paper);
     width:450px;
+    max-width:92vw;
     padding:32px;
     border-radius:14px;
     box-shadow:0 25px 60px rgba(11,29,51,.35);
-    border-top:4px solid var(--gold);
+    border-top:4px solid var(--brass-bright);
+    position:relative;
 }
 
 .modal-box h2{
@@ -478,12 +632,14 @@ tbody tr:hover{
     outline:none;
     font-size:13.5px;
     font-family:'Inter',sans-serif;
+    transition:border-color .15s ease, box-shadow .15s ease;
 }
 
 .modal-box input:focus,
 .modal-box textarea:focus,
 .modal-box select:focus{
-    border-color:var(--gold);
+    border-color:var(--brass-bright);
+    box-shadow:0 0 0 3px rgba(201,162,39,.14);
 }
 
 .modal-box textarea{
@@ -498,19 +654,28 @@ tbody tr:hover{
     border:none;
     border-radius:8px;
     background:var(--navy);
-    color:var(--gold-soft);
+    color:var(--brass-soft);
     cursor:pointer;
     font-weight:600;
+    transition:background .15s ease, transform .1s ease;
 }
 
 .modal-box button:hover{
     background:var(--navy-deep);
 }
 
-#closeAdd, #closeBorrow, #closeLogin{
+.modal-box button:active{
+    transform:scale(.98);
+}
+
+#closeAdd, #closeBorrow{
     background:transparent;
     color:var(--ink-soft);
     border:1px solid var(--line);
+}
+
+#closeAdd:hover, #closeBorrow:hover{
+    background:var(--line-soft);
 }
 
 /* ===============================
@@ -556,7 +721,13 @@ tbody tr:hover{
     border-radius:16px;
     padding:36px 34px;
     box-shadow:0 25px 60px rgba(0,0,0,.35);
-    border-top:5px solid var(--gold);
+    border-top:5px solid var(--brass-bright);
+    animation:gateRise .45s ease both;
+}
+
+@keyframes gateRise{
+    from{ opacity:0; transform:translateY(14px); }
+    to{ opacity:1; transform:translateY(0); }
 }
 
 .gate-title{
@@ -595,7 +766,7 @@ tbody tr:hover{
 
 .gate-tab.active{
     color:var(--navy);
-    border-bottom-color:var(--gold);
+    border-bottom-color:var(--brass-bright);
 }
 
 #gateLoginForm input,
@@ -607,11 +778,13 @@ tbody tr:hover{
     border-radius:8px;
     outline:none;
     font-size:13.5px;
+    transition:border-color .15s ease, box-shadow .15s ease;
 }
 
 #gateLoginForm input:focus,
 #gateSignupForm input:focus{
-    border-color:var(--gold);
+    border-color:var(--brass-bright);
+    box-shadow:0 0 0 3px rgba(201,162,39,.14);
 }
 
 #gateLoginForm button,
@@ -622,14 +795,20 @@ tbody tr:hover{
     border:none;
     border-radius:8px;
     background:var(--navy);
-    color:var(--gold-soft);
+    color:var(--brass-soft);
     cursor:pointer;
     font-weight:600;
+    transition:background .15s ease, transform .1s ease;
 }
 
 #gateLoginForm button:hover,
 #gateSignupForm button:hover{
     background:var(--navy-deep);
+}
+
+#gateLoginForm button:active,
+#gateSignupForm button:active{
+    transform:scale(.98);
 }
 
 .email-suffix-wrap{
@@ -640,10 +819,12 @@ tbody tr:hover{
     margin-bottom:13px;
     overflow:hidden;
     background:#fff;
+    transition:border-color .15s ease, box-shadow .15s ease;
 }
 
 .email-suffix-wrap:focus-within{
-    border-color:var(--gold);
+    border-color:var(--brass-bright);
+    box-shadow:0 0 0 3px rgba(201,162,39,.14);
 }
 
 .email-suffix-wrap input{
@@ -651,6 +832,7 @@ tbody tr:hover{
     border:none !important;
     margin-bottom:0 !important;
     border-radius:0 !important;
+    box-shadow:none !important;
 }
 
 .email-suffix-wrap input:focus{
@@ -679,9 +861,11 @@ tbody tr:hover{
 
 @media(max-width:1000px){
     .cards{ grid-template-columns:repeat(2,1fr); }
-    .sidebar{ width:80px; padding:24px 10px; }
+    .sidebar{ width:80px; padding:24px 8px; }
     .sidebar h2{ font-size:0; }
+    .sidebar h2::before{ content:"📚"; font-size:20px; }
     .sidebar .tagline{ display:none; }
+    .sidebar-footer{ display:none; }
     .main{ margin-left:80px; width:calc(100% - 80px); }
 }
 
