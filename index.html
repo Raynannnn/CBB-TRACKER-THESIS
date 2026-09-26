@@ -16,7 +16,7 @@ CBB Thesis Tracker
 <link rel="stylesheet" href="style.css">
 
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 
 
 </head>
@@ -37,7 +37,9 @@ CBB Thesis Tracker
 📚 CBB Tracker
 </h2>
 
-
+<p class="tagline">
+Thesis Archive
+</p>
 
 <ul>
 
@@ -114,6 +116,13 @@ Borrow History
 </li>
 
 
+<li class="menu" data-section="LOGINLOG" id="ownerMenuItem">
+
+🔑 Login Activity
+
+</li>
+
+
 
 </ul>
 
@@ -154,9 +163,15 @@ Centralized Thesis Monitoring System
 
 
 
-<div class="admin">
+<div class="header-right">
 
-ADMIN
+<span id="roleBadge"></span>
+
+<div class="admin" id="authBtn">
+
+LOGIN
+
+</div>
 
 </div>
 
@@ -468,6 +483,76 @@ STATUS
 
 
 
+<!-- =========================
+        LOGIN ACTIVITY (OWNER ONLY)
+========================= -->
+
+
+<div id="loginLogPage" style="display:none;">
+
+
+<h2>
+
+🔑 Login Activity
+
+</h2>
+
+
+<span class="owner-note">
+
+Visible only to the Owner account. Shows every time an admin has logged in.
+
+</span>
+
+
+
+<table>
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+EMAIL
+</th>
+
+
+<th>
+DATE &amp; TIME
+</th>
+
+
+<th>
+DEVICE / BROWSER
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody id="loginLogTable">
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+</div>
+
+
+
+
 
 
 
@@ -710,6 +795,36 @@ CANCEL
 </div>
 
 
+<!-- =========================
+        LOGIN MODAL (Doc/Adviser only)
+========================= -->
+
+<div class="modal" id="loginModal">
+
+<div class="modal-box">
+
+<h2>Admin Login</h2>
+
+<input id="loginEmail" placeholder="Email" type="email">
+
+<input id="loginPassword" placeholder="Password" type="password">
+
+<button id="submitLogin">LOGIN</button>
+
+<button id="closeLogin">CANCEL</button>
+
+</div>
+
+</div>
+
+</div><!-- /.main -->
+
+<!-- Firebase (FREE tier) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+
+<script src="firebase-config.js"></script>
 <script src="app.js"></script>
 
 
